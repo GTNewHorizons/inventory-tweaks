@@ -18,6 +18,8 @@ Find the latest builds on the GTNH [Jenkins](http://jenkins.usrv.eu:8080/job/Inv
 
 This Open Source project (see [License](LICENSE.txt)) is a client mod for [Minecraft](https://www.minecraft.net/), a game by [Mojang AB](https://mojang.com/). It implements various features to help players with the management of inventories and chests. A lot of effort has been put to make it as customizable as possible, without being annoying to set up.
 
-This is the GTNH Fork Copyright (c) 2021-2022 The GTNH Team
+GTNH Modifications Copyright (c) 2022 The GTNH Team
 
-Original code is Copyright (c) 2011-2013 Marwane Kalam-Alami
+Licensed under LGPL-3.0 or later - use this however you want, but please give back any modifications
+
+Original code is Copyright (c) 2011-2013 Marwane Kalam-Alami and was licensed under the MIT License.
