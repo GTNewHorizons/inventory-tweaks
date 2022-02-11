@@ -8,15 +8,14 @@ This is Inventory Tweaks for minecraft 1.7.10, but....  without this:
 
 Yup.  all it does, other than a few minor bugs backported to mc 1.7.10 by @asiekierka, is add a config option to remove that pesky 'loaded' message.
 
-It should be compleatly cross-compatable with outher users of inventory tweaks, both joining servers without this modification, and vice-versa.  It has also been tested on servers.
+It should be completely cross-compatible with other uses of inventory tweaks, both joining servers without this modification, and vice-versa. It has also been tested on servers.
 
 ##Download:
 
-If you do not wish to build the project from source yourself, you can snag a pre-built copy to download:
+Find the latest builds on the GTNH [Jenkins](http://jenkins.usrv.eu:8080/job/Inventory-Tweaks/)
 
-<a href="http://hydra.13-thirtyseven.com/Minecraft/builds/Inventory_Tweaks_1.7.10/InventoryTweaks-1.59j-dev.jar">InventoryTweaks-1.59j-dev.jar</a></br>
-<a href="http://hydra.13-thirtyseven.com/Minecraft/builds/Inventory_Tweaks_1.7.10/InventoryTweaks-1.59j-deobf.jar">InventoryTweaks-1.59j-deobf.jar</a>
+##License:
 
-##Legal:
+This Open Source project (see [License](LICENSE.md)) is a client mod for [Minecraft](https://www.minecraft.net/), a game by [Mojang AB](https://mojang.com/). It implements various features to help players with the management of inventories and chests. A lot of effort has been put to make it as customizable as possible, without being annoying to set up.
 
-This Open Source project (see [License](https://github.com/mkalam-alami/inventory-tweaks/blob/master/src/doc/license.txt)) is a client mod for [Minecraft](http://www.minecraft.net/), a game by [Mojang AB](http://mojang.com/). It implements various features to help players with the management of inventories and chests. A lot of effort has been put to make it as customizable as possible, without being annoying to set up.
+This is the GTNH Fork.

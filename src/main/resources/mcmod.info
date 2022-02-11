@@ -1,22 +1,15 @@
-[
-{
+[{
     "modid": "${modId}",
     "name": "${modName}",
     "description": "Tweaks to inventory handling for ease of use, including sorting and automatic replacement of broken tools or exhausted stacks of items.",
-    "mcversion": "${modVersion}",
-    "version": "${minecraftVersion}",
-    "url": "https://github.com/Kobata/inventory-tweaks",
+    "version": "${modVersion}",
+    "mcversion": "${minecraftVersion}",
+    "url": "https://github.com/GTNewHorizons/inventory-tweaks",
     "updateUrl": "",
-    "authors": [
-        "Jimeo Wan",
-        "Kobata"
-    ],
+    "authors": [ "Jimeo Wan", "Kobata" ],
     "credits": "By Jimeo Wan, updated for Forge by Kobata",
     "logoFile": "/invtweaks.png",
-    "screenshots": [
-    ],
+    "screenshots": [ ],
     "parent":"",
-    "dependencies": [
-    ]
-}
-]
+    "dependencies": [ ]
+}]
