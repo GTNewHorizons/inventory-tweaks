@@ -1,6 +1,11 @@
 package invtweaks;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Extension of the default Properties class, that ensures the entries are listed in alphabetical order.

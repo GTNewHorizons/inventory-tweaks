@@ -1,6 +1,10 @@
 package invtweaks;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Vector;
 import java.util.concurrent.TimeoutException;
 
 import net.minecraft.client.Minecraft;
@@ -250,7 +254,7 @@ public class InvTweaksHandlerShortcuts extends InvTweaksObfuscation {
 
                         // Choose target section
                         if (shortcut.getTarget() != ShortcutSpecification.Target.UNSPECIFIED) { // Explicit section
-                                                                                                // (up/down shortcuts)
+                            // (up/down shortcuts)
                             int sectionOffset = 0;
                             if (shortcut.getTarget() == ShortcutSpecification.Target.UP) {
                                 sectionOffset--;
@@ -388,7 +392,7 @@ public class InvTweaksHandlerShortcuts extends InvTweaksObfuscation {
                                             newIndex = getNextTargetIndex(shortcut);
                                             toIndex = (success || (shortcut.action == ShortcutSpecification.Action.DROP)
                                                     || newIndex != toIndex) ? newIndex : -1; // Needed when we can't put
-                                                                                             // items in the target slot
+                                            // items in the target slot
                                             tries++;
                                         }
                                     } else {

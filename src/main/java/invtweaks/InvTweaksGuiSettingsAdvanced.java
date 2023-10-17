@@ -1,6 +1,6 @@
 package invtweaks;
 
-import java.awt.*;
+import java.awt.Desktop;
 import java.util.List;
 
 import net.minecraft.client.Minecraft;

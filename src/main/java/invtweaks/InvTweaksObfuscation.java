@@ -255,7 +255,7 @@ public class InvTweaksObfuscation {
         try {
             mc.getResourceManager().getResource(texture);
         } catch (/* IOException */Exception e) { // FIXME: Java is stupid, the exception annotations just aren't being
-                                                 // generated correctly at the moment.
+            // generated correctly at the moment.
             return false;
         }
         return true;

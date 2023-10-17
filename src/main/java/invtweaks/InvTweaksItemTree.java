@@ -1,6 +1,13 @@
 package invtweaks;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Vector;
 
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;

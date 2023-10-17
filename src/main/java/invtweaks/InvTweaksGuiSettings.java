@@ -1,6 +1,6 @@
 package invtweaks;
 
-import java.awt.*;
+import java.awt.Desktop;
 import java.net.URL;
 import java.util.List;
 

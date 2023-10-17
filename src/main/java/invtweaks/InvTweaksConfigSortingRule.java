@@ -1,6 +1,6 @@
 package invtweaks;
 
-import java.awt.*;
+import java.awt.Point;
 
 import org.apache.logging.log4j.Logger;
 

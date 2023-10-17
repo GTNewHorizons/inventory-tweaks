@@ -1,7 +1,13 @@
 package invtweaks;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Vector;
 import java.util.concurrent.TimeoutException;
 
 import net.minecraft.client.Minecraft;
@@ -78,11 +84,11 @@ public class InvTweaksHandlerSorting extends InvTweaksObfuscation {
         this.size = containerMgr.getSize();
         this.sortArmorParts = config.getProperty(InvTweaksConfig.PROP_ENABLE_AUTO_EQUIP_ARMOR)
                 .equals(InvTweaksConfig.VALUE_TRUE) && !isGuiInventoryCreative(getCurrentScreen()); // FIXME Armor parts
-                                                                                                    // disappear when
-                                                                                                    // sorting in
-                                                                                                    // creative mode
-                                                                                                    // while holding an
-                                                                                                    // item
+        // disappear when
+        // sorting in
+        // creative mode
+        // while holding an
+        // item
 
         this.rules = config.getRules();
         this.tree = config.getTree();

@@ -2,7 +2,11 @@ package invtweaks;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.PriorityQueue;
 import java.util.logging.Level;
 
 import net.minecraft.client.Minecraft;
@@ -644,7 +648,7 @@ public class InvTweaks extends InvTweaksObfuscation {
                             // Handle eaten mushroom soup
                             && (getCurrentScreen() == null || // Filter open inventory or other window
                                     isGuiEditSign(getCurrentScreen()))) { // TODO: This should be more expandable on
-                                                                          // 'equivalent' items (API?) and allowed GUIs
+                                        // 'equivalent' items (API?) and allowed GUIs
 
                                         if (config.isAutoRefillEnabled(storedStackId, storedStackDamage)) {
                                             try {
