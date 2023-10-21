@@ -1,7 +1,5 @@
 package invtweaks;
 
-import java.lang.reflect.Field;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -26,7 +24,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ResourceLocation;
 
-import org.apache.logging.log4j.Logger;
 import org.lwjgl.input.Mouse;
 
 import cpw.mods.fml.client.FMLClientHandler;
@@ -41,11 +38,7 @@ import invtweaks.api.container.ContainerSection;
  */
 public class InvTweaksObfuscation {
 
-    private static final Logger log = InvTweaks.log;
-
     public Minecraft mc;
-
-    private static Map<String, Field> fieldsMap = new HashMap<String, Field>();
 
     public InvTweaksObfuscation(Minecraft mc) {
         this.mc = mc;

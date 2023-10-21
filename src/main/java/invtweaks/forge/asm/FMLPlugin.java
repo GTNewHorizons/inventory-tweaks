@@ -6,11 +6,11 @@ import cpw.mods.fml.relauncher.IFMLLoadingPlugin;
 import cpw.mods.fml.relauncher.IFMLLoadingPlugin.MCVersion;
 import cpw.mods.fml.relauncher.IFMLLoadingPlugin.TransformerExclusions;
 
-@TransformerExclusions({ "invtweaks.forge.asm", "invtweaks.forge.asm.compatibility" })
 @MCVersion("1.7.10")
+@TransformerExclusions({ "invtweaks.forge.asm" })
 public class FMLPlugin implements IFMLLoadingPlugin {
 
-    public static boolean runtimeDeobfEnabled = false;
+    private static boolean isObf = false;
 
     @Override
     public String[] getASMTransformerClass() {
@@ -34,6 +34,10 @@ public class FMLPlugin implements IFMLLoadingPlugin {
 
     @Override
     public void injectData(Map<String, Object> data) {
-        runtimeDeobfEnabled = (Boolean) data.get("runtimeDeobfuscationEnabled");
+        isObf = (boolean) data.get("runtimeDeobfuscationEnabled");
+    }
+
+    public static boolean isObf() {
+        return isObf;
     }
 }

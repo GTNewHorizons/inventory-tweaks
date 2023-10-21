@@ -28,25 +28,25 @@ import invtweaks.forge.asm.compatibility.MethodInfo;
 
 public class ContainerTransformer implements IClassTransformer {
 
-    public static final String VALID_INVENTORY_METHOD = "invtweaks$validInventory";
-    public static final String VALID_CHEST_METHOD = "invtweaks$validChest";
-    public static final String LARGE_CHEST_METHOD = "invtweaks$largeChest";
-    public static final String SHOW_BUTTONS_METHOD = "invtweaks$showButtons";
-    public static final String ROW_SIZE_METHOD = "invtweaks$rowSize";
-    public static final String SLOT_MAP_METHOD = "invtweaks$slotMap";
-    public static final String CONTAINER_CLASS_INTERNAL = "net/minecraft/inventory/Container";
-    public static final String SLOT_MAPS_VANILLA_CLASS = "invtweaks/containers/VanillaSlotMaps";
-    public static final String SLOT_MAPS_MODCOMPAT_CLASS = "invtweaks/containers/CompatibilitySlotMaps";
-    public static final String ANNOTATION_CHEST_CONTAINER = "Linvtweaks/api/container/ChestContainer;";
-    public static final String ANNOTATION_CHEST_CONTAINER_ROW_CALLBACK = "Linvtweaks/api/container/ChestContainer$RowSizeCallback;";
-    public static final String ANNOTATION_CHEST_CONTAINER_LARGE_CALLBACK = "Linvtweaks/api/container/ChestContainer$IsLargeCallback;";
-    public static final String ANNOTATION_INVENTORY_CONTAINER = "Linvtweaks/api/container/InventoryContainer;";
-    public static final String ANNOTATION_IGNORE_CONTAINER = "Linvtweaks/api/container/IgnoreContainer;";
-    public static final String ANNOTATION_CONTAINER_SECTION_CALLBACK = "Linvtweaks/api/container/ContainerSectionCallback;";
+    private static final String VALID_INVENTORY_METHOD = "invtweaks$validInventory";
+    private static final String VALID_CHEST_METHOD = "invtweaks$validChest";
+    private static final String LARGE_CHEST_METHOD = "invtweaks$largeChest";
+    private static final String SHOW_BUTTONS_METHOD = "invtweaks$showButtons";
+    private static final String ROW_SIZE_METHOD = "invtweaks$rowSize";
+    private static final String SLOT_MAP_METHOD = "invtweaks$slotMap";
+    private static final String CONTAINER_CLASS_INTERNAL = "net/minecraft/inventory/Container";
+    private static final String SLOT_MAPS_VANILLA_CLASS = "invtweaks/containers/VanillaSlotMaps";
+    private static final String SLOT_MAPS_MODCOMPAT_CLASS = "invtweaks/containers/CompatibilitySlotMaps";
+    private static final String ANNOTATION_CHEST_CONTAINER = "Linvtweaks/api/container/ChestContainer;";
+    private static final String ANNOTATION_CHEST_CONTAINER_ROW_CALLBACK = "Linvtweaks/api/container/ChestContainer$RowSizeCallback;";
+    private static final String ANNOTATION_CHEST_CONTAINER_LARGE_CALLBACK = "Linvtweaks/api/container/ChestContainer$IsLargeCallback;";
+    private static final String ANNOTATION_INVENTORY_CONTAINER = "Linvtweaks/api/container/InventoryContainer;";
+    private static final String ANNOTATION_IGNORE_CONTAINER = "Linvtweaks/api/container/IgnoreContainer;";
+    private static final String ANNOTATION_CONTAINER_SECTION_CALLBACK = "Linvtweaks/api/container/ContainerSectionCallback;";
 
-    private static Map<String, ContainerInfo> standardClasses = new HashMap<String, ContainerInfo>();
-    private static Map<String, ContainerInfo> compatibilityClasses = new HashMap<String, ContainerInfo>();
-    private static Map<String, ContainerInfo> configClasses = new HashMap<String, ContainerInfo>();
+    private static final Map<String, ContainerInfo> standardClasses = new HashMap<>();
+    private static final Map<String, ContainerInfo> compatibilityClasses = new HashMap<>();
+    private static Map<String, ContainerInfo> configClasses = new HashMap<>();
     private static String containerClassName;
 
     public ContainerTransformer() {}
@@ -111,27 +111,23 @@ public class ContainerTransformer implements IClassTransformer {
         try {
             configClasses = CompatibilityConfigLoader.load("config/InvTweaksCompatibility.xml");
         } catch (FileNotFoundException ex) {
-            configClasses = new HashMap<String, ContainerInfo>();
+            configClasses = new HashMap<>();
         } catch (Exception ex) {
-            configClasses = new HashMap<String, ContainerInfo>();
+            configClasses = new HashMap<>();
             ex.printStackTrace();
         }
     }
 
     @Override
     public byte[] transform(String name, String transformedName, byte[] bytes) {
+
         if (containerClassName == null) {
-            if (FMLPlugin.runtimeDeobfEnabled) {
+            if (FMLPlugin.isObf()) {
                 containerClassName = FMLDeobfuscatingRemapper.INSTANCE.unmap(CONTAINER_CLASS_INTERNAL);
             } else {
                 containerClassName = CONTAINER_CLASS_INTERNAL;
             }
             lateInit();
-        }
-
-        // Sanity checking so it doesn't look like this mod caused crashes when things were missing.
-        if (bytes == null || bytes.length == 0) {
-            return bytes;
         }
 
         ClassReader cr = new ClassReader(bytes);
@@ -142,18 +138,14 @@ public class ContainerTransformer implements IClassTransformer {
 
         if ("net.minecraft.inventory.Container".equals(transformedName)) {
             FMLRelaunchLog.info("InvTweaks: %s", transformedName);
-
             transformBaseContainer(cn);
-
             cn.accept(cw);
             return cw.toByteArray();
         }
 
         if ("net.minecraft.client.gui.inventory.ContainerCreative".equals(transformedName)) {
             FMLRelaunchLog.info("InvTweaks: %s", transformedName);
-
             transformCreativeContainer(cn);
-
             cn.accept(cw);
             return cw.toByteArray();
         }
@@ -162,18 +154,15 @@ public class ContainerTransformer implements IClassTransformer {
         ContainerInfo info = standardClasses.get(transformedName);
         if (info != null) {
             FMLRelaunchLog.info("InvTweaks: %s", transformedName);
-
             transformContainer(cn, info);
-
             cn.accept(cw);
             return cw.toByteArray();
         }
 
         if ("invtweaks.InvTweaksObfuscation".equals(transformedName)) {
             FMLRelaunchLog.info("InvTweaks: %s", transformedName);
-
             Type containertype = Type.getObjectType(containerClassName);
-            for (MethodNode method : (List<MethodNode>) cn.methods) {
+            for (MethodNode method : cn.methods) {
                 if ("isValidChest".equals(method.name)) {
                     ASMHelper.replaceSelfForwardingMethod(method, VALID_CHEST_METHOD, containertype);
                 } else if ("isValidInventory".equals(method.name)) {
@@ -188,7 +177,6 @@ public class ContainerTransformer implements IClassTransformer {
                     ASMHelper.replaceSelfForwardingMethod(method, LARGE_CHEST_METHOD, containertype);
                 }
             }
-
             cn.accept(cw);
             return cw.toByteArray();
         }
@@ -196,15 +184,13 @@ public class ContainerTransformer implements IClassTransformer {
         info = configClasses.get(transformedName);
         if (info != null) {
             FMLRelaunchLog.info("InvTweaks: %s", transformedName);
-
             transformContainer(cn, info);
-
             cn.accept(cw);
             return cw.toByteArray();
         }
 
         if (cn.visibleAnnotations != null) {
-            for (AnnotationNode annotation : (List<AnnotationNode>) cn.visibleAnnotations) {
+            for (AnnotationNode annotation : cn.visibleAnnotations) {
                 if (annotation != null) {
                     ContainerInfo apiInfo = null;
 
@@ -294,18 +280,14 @@ public class ContainerTransformer implements IClassTransformer {
         info = compatibilityClasses.get(transformedName);
         if (info != null) {
             FMLRelaunchLog.info("InvTweaks: %s", transformedName);
-
             transformContainer(cn, info);
-
             cn.accept(cw);
             return cw.toByteArray();
         }
 
         if ("net.minecraft.client.gui.GuiTextField".equals(transformedName)) {
             FMLRelaunchLog.info("InvTweaks: %s", transformedName);
-
             transformTextField(cn);
-
             cn.accept(cw);
             return cw.toByteArray();
         }
@@ -314,9 +296,9 @@ public class ContainerTransformer implements IClassTransformer {
     }
 
     private MethodNode findAnnotatedMethod(ClassNode cn, String annotationDesc) {
-        for (MethodNode method : (List<MethodNode>) cn.methods) {
+        for (MethodNode method : cn.methods) {
             if (method.visibleAnnotations != null) {
-                for (AnnotationNode methodAnnotation : (List<AnnotationNode>) method.visibleAnnotations) {
+                for (AnnotationNode methodAnnotation : method.visibleAnnotations) {
                     if (annotationDesc.equals(methodAnnotation.desc)) {
                         return method;
                     }
@@ -429,7 +411,7 @@ public class ContainerTransformer implements IClassTransformer {
     }
 
     private static void transformTextField(ClassNode clazz) {
-        for (MethodNode method : (List<MethodNode>) clazz.methods) {
+        for (MethodNode method : clazz.methods) {
             String unmappedName = FMLDeobfuscatingRemapper.INSTANCE.mapMethodName(clazz.name, method.name, method.desc);
             String unmappedDesc = FMLDeobfuscatingRemapper.INSTANCE.mapMethodDesc(method.desc);
 
@@ -454,7 +436,8 @@ public class ContainerTransformer implements IClassTransformer {
                                     Opcodes.INVOKESTATIC,
                                     "invtweaks/forge/InvTweaksMod",
                                     "setTextboxModeStatic",
-                                    "(Z)V"));
+                                    "(Z)V",
+                                    false));
 
                     FMLRelaunchLog.info("InvTweaks: successfully transformed setFocused/func_146195_b");
                 } else {

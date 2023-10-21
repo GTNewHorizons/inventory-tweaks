@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * A marker for containers that have a chest-like persistant storage component. Enables the Inventroy Tweaks sorting
+ * A marker for containers that have a chest-like persistant storage component. Enables the Inventory Tweaks sorting
  * buttons for this container.
  */
 @Retention(RetentionPolicy.RUNTIME)

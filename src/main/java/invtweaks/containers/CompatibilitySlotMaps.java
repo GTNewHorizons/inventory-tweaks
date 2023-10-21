@@ -9,11 +9,11 @@ import net.minecraft.inventory.Slot;
 
 import invtweaks.api.container.ContainerSection;
 
-@SuppressWarnings("unchecked")
+@SuppressWarnings({ "unchecked", "unused" })
 public class CompatibilitySlotMaps {
 
     public static Map<ContainerSection, List<Slot>> ee3PortableCraftingSlots(Container container) {
-        Map<ContainerSection, List<Slot>> slotRefs = new HashMap<ContainerSection, List<Slot>>();
+        Map<ContainerSection, List<Slot>> slotRefs = new HashMap<>();
 
         slotRefs.put(ContainerSection.CRAFTING_OUT, container.inventorySlots.subList(0, 1));
         slotRefs.put(ContainerSection.CRAFTING_IN, container.inventorySlots.subList(1, 10));
@@ -21,7 +21,7 @@ public class CompatibilitySlotMaps {
     }
 
     public static Map<ContainerSection, List<Slot>> galacticraftPlayerSlots(Container container) {
-        Map<ContainerSection, List<Slot>> slotRefs = new HashMap<ContainerSection, List<Slot>>();
+        Map<ContainerSection, List<Slot>> slotRefs = new HashMap<>();
 
         slotRefs.put(ContainerSection.CRAFTING_OUT, container.inventorySlots.subList(0, 1));
         slotRefs.put(ContainerSection.CRAFTING_IN, container.inventorySlots.subList(1, 5));
