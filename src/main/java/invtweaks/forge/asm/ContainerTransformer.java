@@ -143,13 +143,6 @@ public class ContainerTransformer implements IClassTransformer {
             return cw.toByteArray();
         }
 
-        if ("net.minecraft.client.gui.inventory.ContainerCreative".equals(transformedName)) {
-            FMLRelaunchLog.info("InvTweaks: %s", transformedName);
-            transformCreativeContainer(cn);
-            cn.accept(cw);
-            return cw.toByteArray();
-        }
-
         // Transform classes with explicitly specified information
         ContainerInfo info = standardClasses.get(transformedName);
         if (info != null) {
@@ -396,7 +389,7 @@ public class ContainerTransformer implements IClassTransformer {
                 Type.getObjectType(CONTAINER_CLASS_INTERNAL));
     }
 
-    public static void transformCreativeContainer(ClassNode clazz) {
+    public static void transformCreativeContainer(ClassNode classNode) {
         /*
          * FIXME: Reqired methods cannot be compiled until SpecialSource update
          * ASMHelper.generateForwardingToStaticMethod(clazz, STANDARD_INVENTORY_METHOD, "containerCreativeIsInventory",
