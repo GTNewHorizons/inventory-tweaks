@@ -2,7 +2,6 @@ package invtweaks.forge.asm;
 
 import java.io.FileNotFoundException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 
@@ -46,7 +45,7 @@ public class ContainerTransformer implements IClassTransformer {
 
     private static final Map<String, ContainerInfo> standardClasses = new HashMap<>();
     private static final Map<String, ContainerInfo> compatibilityClasses = new HashMap<>();
-    private static Map<String, ContainerInfo> configClasses = new HashMap<>();
+    private static final Map<String, ContainerInfo> configClasses = new HashMap<>();
     private static String containerClassName;
 
     public ContainerTransformer() {}
@@ -109,11 +108,9 @@ public class ContainerTransformer implements IClassTransformer {
                 new ContainerInfo(true, true, false, getCompatiblitySlotMapInfo("galacticraftPlayerSlots")));
 
         try {
-            configClasses = CompatibilityConfigLoader.load("config/InvTweaksCompatibility.xml");
-        } catch (FileNotFoundException ex) {
-            configClasses = new HashMap<>();
+            configClasses.putAll( CompatibilityConfigLoader.load("config/InvTweaksCompatibility.xml"));
+        } catch (FileNotFoundException ignored) {
         } catch (Exception ex) {
-            configClasses = new HashMap<>();
             ex.printStackTrace();
         }
     }
