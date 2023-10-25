@@ -10,8 +10,6 @@ import cpw.mods.fml.relauncher.IFMLLoadingPlugin.TransformerExclusions;
 @TransformerExclusions({ "invtweaks.forge.asm" })
 public class FMLPlugin implements IFMLLoadingPlugin {
 
-    private static boolean isObf = false;
-
     @Override
     public String[] getASMTransformerClass() {
         return new String[] { "invtweaks.forge.asm.ContainerTransformer" };
@@ -33,11 +31,5 @@ public class FMLPlugin implements IFMLLoadingPlugin {
     }
 
     @Override
-    public void injectData(Map<String, Object> data) {
-        isObf = (boolean) data.get("runtimeDeobfuscationEnabled");
-    }
-
-    public static boolean isObf() {
-        return isObf;
-    }
+    public void injectData(Map<String, Object> data) {}
 }
