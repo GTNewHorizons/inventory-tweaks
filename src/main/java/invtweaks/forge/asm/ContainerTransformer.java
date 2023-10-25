@@ -44,68 +44,66 @@ public class ContainerTransformer implements IClassTransformer {
     private static final String ANNOTATION_IGNORE_CONTAINER = "Linvtweaks/api/container/IgnoreContainer;";
     private static final String ANNOTATION_CONTAINER_SECTION_CALLBACK = "Linvtweaks/api/container/ContainerSectionCallback;";
 
-    private static final Map<String, ContainerInfo> standardClasses = new HashMap<>();
-    private static final Map<String, ContainerInfo> compatibilityClasses = new HashMap<>();
-    private static final Map<String, ContainerInfo> configClasses = new HashMap<>();
+    private static final Map<String, ContainerInfo> containerToTransform = new HashMap<>();
 
     public ContainerTransformer() {
         // TODO: ContainerCreative handling
         // Standard non-chest type
-        standardClasses.put(
+        containerToTransform.put(
                 "net.minecraft.inventory.ContainerPlayer",
                 new ContainerInfo(true, true, false, getVanillaSlotMapInfo("containerPlayerSlots")));
-        standardClasses.put("net.minecraft.inventory.ContainerMerchant", new ContainerInfo(true, true, false));
-        standardClasses.put(
+        containerToTransform.put("net.minecraft.inventory.ContainerMerchant", new ContainerInfo(true, true, false));
+        containerToTransform.put(
                 "net.minecraft.inventory.ContainerRepair",
                 new ContainerInfo(true, true, false, getVanillaSlotMapInfo("containerPlayerSlots")));
-        standardClasses.put("net.minecraft.inventory.ContainerHopper", new ContainerInfo(true, true, false));
-        standardClasses.put("net.minecraft.inventory.ContainerBeacon", new ContainerInfo(true, true, false));
-        standardClasses.put(
+        containerToTransform.put("net.minecraft.inventory.ContainerHopper", new ContainerInfo(true, true, false));
+        containerToTransform.put("net.minecraft.inventory.ContainerBeacon", new ContainerInfo(true, true, false));
+        containerToTransform.put(
                 "net.minecraft.inventory.ContainerBrewingStand",
                 new ContainerInfo(true, true, false, getVanillaSlotMapInfo("containerBrewingSlots")));
-        standardClasses.put(
+        containerToTransform.put(
                 "net.minecraft.inventory.ContainerWorkbench",
                 new ContainerInfo(true, true, false, getVanillaSlotMapInfo("containerWorkbenchSlots")));
-        standardClasses.put(
+        containerToTransform.put(
                 "net.minecraft.inventory.ContainerEnchantment",
                 new ContainerInfo(true, true, false, getVanillaSlotMapInfo("containerEnchantmentSlots")));
-        standardClasses.put(
+        containerToTransform.put(
                 "net.minecraft.inventory.ContainerFurnace",
                 new ContainerInfo(true, true, false, getVanillaSlotMapInfo("containerFurnaceSlots")));
 
         // Chest-type
-        standardClasses.put(
+        containerToTransform.put(
                 "net.minecraft.inventory.ContainerDispenser",
                 new ContainerInfo(true, false, true, (short) 3, getVanillaSlotMapInfo("containerChestDispenserSlots")));
-        standardClasses.put(
+        containerToTransform.put(
                 "net.minecraft.inventory.ContainerChest",
                 new ContainerInfo(true, false, true, getVanillaSlotMapInfo("containerChestDispenserSlots")));
 
         // Mod compatibility
         // Equivalent Exchange 3
-        compatibilityClasses.put(
+        containerToTransform.put(
                 "com.pahimar.ee3.inventory.ContainerAlchemicalBag",
                 new ContainerInfo(true, false, true, true, (short) 13));
-        compatibilityClasses.put(
+        containerToTransform.put(
                 "com.pahimar.ee3.inventory.ContainerAlchemicalChest",
                 new ContainerInfo(true, false, true, true, (short) 13));
-        compatibilityClasses.put(
+        containerToTransform.put(
                 "com.pahimar.ee3.inventory.ContainerPortableCrafting",
                 new ContainerInfo(true, true, false, getCompatiblitySlotMapInfo("ee3PortableCraftingSlots")));
 
         // Ender Storage
         // TODO Row size method. A bit less important because it's a config setting and 2 of 3 options give rowsize 9.
-        compatibilityClasses.put(
+        containerToTransform.put(
                 "codechicken.enderstorage.storage.item.ContainerEnderItemStorage",
                 new ContainerInfo(true, false, true));
 
         // Galacticraft
-        compatibilityClasses.put(
+        containerToTransform.put(
                 "micdoodle8.mods.galacticraft.core.inventory.GCCoreContainerPlayer",
                 new ContainerInfo(true, true, false, getCompatiblitySlotMapInfo("galacticraftPlayerSlots")));
 
         try {
-            configClasses.putAll(CompatibilityConfigLoader.load("config/InvTweaksCompatibility.xml"));
+            containerToTransform.putAll(CompatibilityConfigLoader.load("config/InvTweaksCompatibility.xml"));
         } catch (FileNotFoundException ignored) {} catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -127,19 +125,17 @@ public class ContainerTransformer implements IClassTransformer {
             return cw.toByteArray();
         }
 
-        // Transform classes with explicitly specified information
-        ContainerInfo info = standardClasses.get(transformedName);
-        if (info != null) {
+        if ("net.minecraft.client.gui.GuiTextField".equals(transformedName)) {
             FMLRelaunchLog.info("InvTweaks: %s", transformedName);
-            transformContainer(cn, info);
+            transformTextField(cn);
             cn.accept(cw);
             return cw.toByteArray();
         }
 
-        info = configClasses.get(transformedName);
-        if (info != null) {
+        // Transform classes with explicitly specified information
+        if (containerToTransform.containsKey(transformedName)) {
             FMLRelaunchLog.info("InvTweaks: %s", transformedName);
-            transformContainer(cn, info);
+            transformContainer(cn, containerToTransform.get(transformedName));
             cn.accept(cw);
             return cw.toByteArray();
         }
@@ -230,21 +226,6 @@ public class ContainerTransformer implements IClassTransformer {
                     }
                 }
             }
-        }
-
-        info = compatibilityClasses.get(transformedName);
-        if (info != null) {
-            FMLRelaunchLog.info("InvTweaks: %s", transformedName);
-            transformContainer(cn, info);
-            cn.accept(cw);
-            return cw.toByteArray();
-        }
-
-        if ("net.minecraft.client.gui.GuiTextField".equals(transformedName)) {
-            FMLRelaunchLog.info("InvTweaks: %s", transformedName);
-            transformTextField(cn);
-            cn.accept(cw);
-            return cw.toByteArray();
         }
 
         return bytes;
