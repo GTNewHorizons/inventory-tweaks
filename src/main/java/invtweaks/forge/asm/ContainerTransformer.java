@@ -6,6 +6,8 @@ import java.util.Map;
 
 import net.minecraft.launchwrapper.IClassTransformer;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
@@ -17,7 +19,6 @@ import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.VarInsnNode;
 
-import cpw.mods.fml.relauncher.FMLRelaunchLog;
 import invtweaks.forge.asm.compatibility.CompatibilityConfigLoader;
 import invtweaks.forge.asm.compatibility.ContainerInfo;
 import invtweaks.forge.asm.compatibility.MethodInfo;
@@ -40,7 +41,7 @@ public class ContainerTransformer implements IClassTransformer {
     private static final String ANNOTATION_INVENTORY_CONTAINER = "Linvtweaks/api/container/InventoryContainer;";
     private static final String ANNOTATION_IGNORE_CONTAINER = "Linvtweaks/api/container/IgnoreContainer;";
     private static final String ANNOTATION_CONTAINER_SECTION_CALLBACK = "Linvtweaks/api/container/ContainerSectionCallback;";
-
+    private static final Logger logger = LogManager.getLogger("ASM InvTweaks");
     private static final Map<String, ContainerInfo> containerToTransform = new HashMap<>();
 
     public ContainerTransformer() {
@@ -109,31 +110,33 @@ public class ContainerTransformer implements IClassTransformer {
     @Override
     public byte[] transform(String name, String transformedName, byte[] basicClass) {
 
-        ClassReader cr = new ClassReader(basicClass);
-        ClassNode cn = new ClassNode(Opcodes.ASM5);
-        ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
-
-        cr.accept(cn, 0);
-
         if ("net.minecraft.inventory.Container".equals(transformedName)) {
-            FMLRelaunchLog.info("InvTweaks: %s", transformedName);
-            transformBaseContainer(cn);
-            cn.accept(cw);
-            return cw.toByteArray();
+            logger.info("Transforming " + transformedName);
+            return transformContainer(basicClass);
         }
 
         if ("net.minecraft.client.gui.GuiTextField".equals(transformedName)) {
-            FMLRelaunchLog.info("InvTweaks: %s", transformedName);
+            logger.info("Transforming " + transformedName);
             return transformGuiTextField(basicClass);
         }
 
         // Transform classes with explicitly specified information
         if (containerToTransform.containsKey(transformedName)) {
-            FMLRelaunchLog.info("InvTweaks: %s", transformedName);
-            transformContainer(cn, containerToTransform.get(transformedName));
-            cn.accept(cw);
-            return cw.toByteArray();
+            logger.info("Transforming " + transformedName);
+            ClassReader classReader = new ClassReader(basicClass);
+            ClassNode classNode = new ClassNode(Opcodes.ASM5);
+            classReader.accept(classNode, 0);
+            transformContainer(classNode, containerToTransform.get(transformedName));
+            ClassWriter classWriter = new ClassWriter(0);
+            classNode.accept(classWriter);
+            return classWriter.toByteArray();
         }
+
+        ClassReader cr = new ClassReader(basicClass);
+        ClassNode cn = new ClassNode(Opcodes.ASM5);
+        ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
+
+        cr.accept(cn, 0);
 
         if (cn.visibleAnnotations != null) {
             for (AnnotationNode annotation : cn.visibleAnnotations) {
@@ -226,6 +229,19 @@ public class ContainerTransformer implements IClassTransformer {
         return basicClass;
     }
 
+    /**
+     * Adds inventory tweaks methods to {@link net.minecraft.inventory.Container}
+     */
+    private static byte[] transformContainer(byte[] basicClass) {
+        ClassReader classReader = new ClassReader(basicClass);
+        ClassNode classNode = new ClassNode(Opcodes.ASM5);
+        classReader.accept(classNode, 0);
+        transformBaseContainer(classNode);
+        ClassWriter classWriter = new ClassWriter(0);
+        classNode.accept(classWriter);
+        return classWriter.toByteArray();
+    }
+
     private MethodNode findAnnotatedMethod(ClassNode cn, String annotationDesc) {
         for (MethodNode method : cn.methods) {
             if (method.visibleAnnotations != null) {
@@ -242,19 +258,19 @@ public class ContainerTransformer implements IClassTransformer {
     /**
      * Alter class to contain information contained by ContainerInfo
      *
-     * @param clazz Class to alter
-     * @param info  Information used to alter class
+     * @param classNode Class to alter
+     * @param info      Information used to alter class
      */
-    public static void transformContainer(ClassNode clazz, ContainerInfo info) {
-        clazz.interfaces.add(IINV_TWEAKS_CONTAINER_INTERFACE);
-        ASMHelper.generateBooleanMethodConst(clazz, SHOW_BUTTONS_METHOD, info.showButtons);
-        ASMHelper.generateBooleanMethodConst(clazz, VALID_INVENTORY_METHOD, info.validInventory);
-        ASMHelper.generateBooleanMethodConst(clazz, VALID_CHEST_METHOD, info.validChest);
+    public static void transformContainer(ClassNode classNode, ContainerInfo info) {
+        classNode.interfaces.add(IINV_TWEAKS_CONTAINER_INTERFACE);
+        ASMHelper.generateBooleanMethodConst(classNode, SHOW_BUTTONS_METHOD, info.showButtons);
+        ASMHelper.generateBooleanMethodConst(classNode, VALID_INVENTORY_METHOD, info.validInventory);
+        ASMHelper.generateBooleanMethodConst(classNode, VALID_CHEST_METHOD, info.validChest);
 
         if (info.largeChestMethod != null) {
             if (info.largeChestMethod.isStatic) {
                 ASMHelper.generateForwardingToStaticMethod(
-                        clazz,
+                        classNode,
                         LARGE_CHEST_METHOD,
                         info.largeChestMethod.methodName,
                         info.largeChestMethod.methodType.getReturnType(),
@@ -262,19 +278,19 @@ public class ContainerTransformer implements IClassTransformer {
                         info.largeChestMethod.methodType.getArgumentTypes()[0]);
             } else {
                 ASMHelper.generateSelfForwardingMethod(
-                        clazz,
+                        classNode,
                         LARGE_CHEST_METHOD,
                         info.largeChestMethod.methodName,
                         info.largeChestMethod.methodType.getReturnType());
             }
         } else {
-            ASMHelper.generateBooleanMethodConst(clazz, LARGE_CHEST_METHOD, info.largeChest);
+            ASMHelper.generateBooleanMethodConst(classNode, LARGE_CHEST_METHOD, info.largeChest);
         }
 
         if (info.rowSizeMethod != null) {
             if (info.rowSizeMethod.isStatic) {
                 ASMHelper.generateForwardingToStaticMethod(
-                        clazz,
+                        classNode,
                         ROW_SIZE_METHOD,
                         info.rowSizeMethod.methodName,
                         info.rowSizeMethod.methodType.getReturnType(),
@@ -282,18 +298,18 @@ public class ContainerTransformer implements IClassTransformer {
                         info.rowSizeMethod.methodType.getArgumentTypes()[0]);
             } else {
                 ASMHelper.generateSelfForwardingMethod(
-                        clazz,
+                        classNode,
                         ROW_SIZE_METHOD,
                         info.rowSizeMethod.methodName,
                         info.rowSizeMethod.methodType.getReturnType());
             }
         } else {
-            ASMHelper.generateIntegerMethodConst(clazz, ROW_SIZE_METHOD, info.rowSize);
+            ASMHelper.generateIntegerMethodConst(classNode, ROW_SIZE_METHOD, info.rowSize);
         }
 
         if (info.slotMapMethod.isStatic) {
             ASMHelper.generateForwardingToStaticMethod(
-                    clazz,
+                    classNode,
                     SLOT_MAP_METHOD,
                     info.slotMapMethod.methodName,
                     info.slotMapMethod.methodType.getReturnType(),
@@ -301,7 +317,7 @@ public class ContainerTransformer implements IClassTransformer {
                     info.slotMapMethod.methodType.getArgumentTypes()[0]);
         } else {
             ASMHelper.generateSelfForwardingMethod(
-                    clazz,
+                    classNode,
                     SLOT_MAP_METHOD,
                     info.slotMapMethod.methodName,
                     info.slotMapMethod.methodType.getReturnType());
@@ -311,17 +327,17 @@ public class ContainerTransformer implements IClassTransformer {
     /**
      * Alter class to contain default implementations of added methods.
      *
-     * @param clazz Class to alter
+     * @param classNode Class to alter
      */
-    public static void transformBaseContainer(ClassNode clazz) {
-        clazz.interfaces.add(IINV_TWEAKS_CONTAINER_INTERFACE);
-        ASMHelper.generateBooleanMethodConst(clazz, SHOW_BUTTONS_METHOD, false);
-        ASMHelper.generateBooleanMethodConst(clazz, VALID_INVENTORY_METHOD, false);
-        ASMHelper.generateBooleanMethodConst(clazz, VALID_CHEST_METHOD, false);
-        ASMHelper.generateBooleanMethodConst(clazz, LARGE_CHEST_METHOD, false);
-        ASMHelper.generateIntegerMethodConst(clazz, ROW_SIZE_METHOD, (short) 9);
+    public static void transformBaseContainer(ClassNode classNode) {
+        classNode.interfaces.add(IINV_TWEAKS_CONTAINER_INTERFACE);
+        ASMHelper.generateBooleanMethodConst(classNode, SHOW_BUTTONS_METHOD, false);
+        ASMHelper.generateBooleanMethodConst(classNode, VALID_INVENTORY_METHOD, false);
+        ASMHelper.generateBooleanMethodConst(classNode, VALID_CHEST_METHOD, false);
+        ASMHelper.generateBooleanMethodConst(classNode, LARGE_CHEST_METHOD, false);
+        ASMHelper.generateIntegerMethodConst(classNode, ROW_SIZE_METHOD, (short) 9);
         ASMHelper.generateForwardingToStaticMethod(
-                clazz,
+                classNode,
                 SLOT_MAP_METHOD,
                 "unknownContainerSlots",
                 Type.getObjectType("java/util/Map"),

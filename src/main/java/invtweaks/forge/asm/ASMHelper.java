@@ -24,6 +24,7 @@ public class ASMHelper implements Opcodes {
         InsnList code = method.instructions;
         code.add(new InsnNode(retval ? ICONST_1 : ICONST_0));
         code.add(new InsnNode(IRETURN));
+        method.visitMaxs(1, 1);
         clazz.methods.add(method);
     }
 
@@ -44,6 +45,7 @@ public class ASMHelper implements Opcodes {
             code.add(new IntInsnNode(SIPUSH, retval));
         }
         code.add(new InsnNode(IRETURN));
+        method.visitMaxs(1, 1);
         clazz.methods.add(method);
     }
 
@@ -113,6 +115,7 @@ public class ASMHelper implements Opcodes {
                         Type.getMethodDescriptor(rettype, thistype),
                         false));
         code.add(new InsnNode(rettype.getOpcode(IRETURN)));
+        method.visitMaxs(1, 1);
     }
 
     /**
@@ -136,5 +139,6 @@ public class ASMHelper implements Opcodes {
                         "()" + rettype.getDescriptor(),
                         false));
         code.add(new InsnNode(rettype.getOpcode(IRETURN)));
+        method.visitMaxs(1, 1);
     }
 }
