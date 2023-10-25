@@ -27,10 +27,10 @@ import invtweaks.InvTweaks;
 import invtweaks.InvTweaksConfig;
 import invtweaks.InvTweaksHandlerSorting;
 import invtweaks.InvTweaksItemTreeLoader;
-import invtweaks.InvTweaksObfuscation;
 import invtweaks.api.IItemTreeListener;
 import invtweaks.api.SortingMethod;
 import invtweaks.api.container.ContainerSection;
+import invtweaks.forge.asm.interfaces.IInvTweaksContainer;
 import invtweaks.network.packets.ITPacketClick;
 import invtweaks.network.packets.ITPacketSortComplete;
 
@@ -152,10 +152,10 @@ public class ClientProxy extends CommonProxy {
         try {
             new InvTweaksHandlerSorting(
                     mc,
-                    instance.getConfigManager().getConfig(),
+                    InvTweaks.getConfigManager().getConfig(),
                     section,
                     method,
-                    InvTweaksObfuscation.getSpecialChestRowSize(currentContainer)).sort();
+                    ((IInvTweaksContainer) currentContainer).invtweaks$rowSize()).sort();
         } catch (Exception e) {
             InvTweaks.logInGameErrorStatic("invtweaks.sort.chest.error", e);
             e.printStackTrace();

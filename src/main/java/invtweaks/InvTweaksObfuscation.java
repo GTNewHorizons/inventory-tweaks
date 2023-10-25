@@ -1,8 +1,5 @@
 package invtweaks;
 
-import java.util.List;
-import java.util.Map;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiButton;
@@ -29,7 +26,6 @@ import org.lwjgl.input.Mouse;
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import invtweaks.api.container.ContainerSection;
 
 /**
  * Minecraft 1.3 Obfuscation layer
@@ -239,11 +235,6 @@ public class InvTweaksObfuscation {
         return guiContainer.height - (Mouse.getEventY() * guiContainer.height) / getDisplayHeight() - 1;
     }
 
-    public static int getSpecialChestRowSize(Container container) {
-        // This method gets replaced by the transformer with "return container.invtweaks$rowSize()"
-        return 0;
-    }
-
     public boolean hasTexture(ResourceLocation texture) {
         try {
             mc.getResourceManager().getResource(texture);
@@ -261,33 +252,8 @@ public class InvTweaksObfuscation {
 
     // Classes
 
-    public static boolean isValidChest(Container container) {
-        // This method gets replaced by the transformer with "return container.invtweaks$validChest()"
-        return false;
-    }
-
-    public static boolean isLargeChest(Container container) {
-        // This method gets replaced by the transformer with "return container.invtweaks$largeChest()"
-        return false;
-    }
-
-    public static boolean isValidInventory(Container container) {
-        // This method gets replaced by the transformer with "return container.invtweaks$validInventory()"
-        return false;
-    }
-
-    public static boolean showButtons(Container container) {
-        // This method gets replaced by the transformer with "return container.invtweaks$showButtons()"
-        return false;
-    }
-
-    public static Map<ContainerSection, List<Slot>> getContainerSlotMap(Container container) {
-        // This method gets replaced by the transformer with "return container.invtweaks$slotMap()"
-        return null;
-    }
-
     public static boolean isGuiContainer(Object o) { // GuiContainer (abstract class)
-        return o != null && o instanceof GuiContainer;
+        return o instanceof GuiContainer;
     }
 
     public static boolean isGuiInventoryCreative(Object o) { // GuiInventoryCreative
@@ -303,7 +269,7 @@ public class InvTweaksObfuscation {
     }
 
     public static boolean isGuiButton(Object o) { // GuiButton
-        return o != null && o instanceof GuiButton;
+        return o instanceof GuiButton;
     }
 
     public static boolean isGuiEditSign(Object o) {
@@ -311,7 +277,7 @@ public class InvTweaksObfuscation {
     }
 
     public static boolean isItemArmor(Object o) { // ItemArmor
-        return o != null && o instanceof ItemArmor;
+        return o instanceof ItemArmor;
     }
 
     public static boolean isBasicSlot(Object o) { // Slot

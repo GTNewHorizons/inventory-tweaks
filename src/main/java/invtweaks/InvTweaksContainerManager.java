@@ -16,6 +16,7 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import invtweaks.api.container.ContainerSection;
 import invtweaks.forge.InvTweaksMod;
+import invtweaks.forge.asm.interfaces.IInvTweaksContainer;
 
 /**
  * Allows to perform various operations on the inventory and/or containers. Works in both single and multiplayer.
@@ -64,7 +65,7 @@ public class InvTweaksContainerManager/* extends InvTweaksObfuscation */ {
     }
 
     private void initSlots() {
-        slotRefs = InvTweaksObfuscation.getContainerSlotMap(container);
+        slotRefs = ((IInvTweaksContainer) container).invtweaks$slotMap();
         if (slotRefs == null) {
             slotRefs = new HashMap<ContainerSection, List<Slot>>();
         }

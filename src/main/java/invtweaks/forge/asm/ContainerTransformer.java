@@ -27,6 +27,7 @@ import invtweaks.forge.asm.compatibility.MethodInfo;
 
 public class ContainerTransformer implements IClassTransformer {
 
+    private static final String IINV_TWEAKS_CONTAINER_INTERFACE = "invtweaks/forge/asm/interfaces/IInvTweaksContainer";
     private static final String VALID_INVENTORY_METHOD = "invtweaks$validInventory";
     private static final String VALID_CHEST_METHOD = "invtweaks$validChest";
     private static final String LARGE_CHEST_METHOD = "invtweaks$largeChest";
@@ -108,9 +109,8 @@ public class ContainerTransformer implements IClassTransformer {
                 new ContainerInfo(true, true, false, getCompatiblitySlotMapInfo("galacticraftPlayerSlots")));
 
         try {
-            configClasses.putAll( CompatibilityConfigLoader.load("config/InvTweaksCompatibility.xml"));
-        } catch (FileNotFoundException ignored) {
-        } catch (Exception ex) {
+            configClasses.putAll(CompatibilityConfigLoader.load("config/InvTweaksCompatibility.xml"));
+        } catch (FileNotFoundException ignored) {} catch (Exception ex) {
             ex.printStackTrace();
         }
     }
@@ -145,28 +145,6 @@ public class ContainerTransformer implements IClassTransformer {
         if (info != null) {
             FMLRelaunchLog.info("InvTweaks: %s", transformedName);
             transformContainer(cn, info);
-            cn.accept(cw);
-            return cw.toByteArray();
-        }
-
-        if ("invtweaks.InvTweaksObfuscation".equals(transformedName)) {
-            FMLRelaunchLog.info("InvTweaks: %s", transformedName);
-            Type containertype = Type.getObjectType(containerClassName);
-            for (MethodNode method : cn.methods) {
-                if ("isValidChest".equals(method.name)) {
-                    ASMHelper.replaceSelfForwardingMethod(method, VALID_CHEST_METHOD, containertype);
-                } else if ("isValidInventory".equals(method.name)) {
-                    ASMHelper.replaceSelfForwardingMethod(method, VALID_INVENTORY_METHOD, containertype);
-                } else if ("showButtons".equals(method.name)) {
-                    ASMHelper.replaceSelfForwardingMethod(method, SHOW_BUTTONS_METHOD, containertype);
-                } else if ("getSpecialChestRowSize".equals(method.name)) {
-                    ASMHelper.replaceSelfForwardingMethod(method, ROW_SIZE_METHOD, containertype);
-                } else if ("getContainerSlotMap".equals(method.name)) {
-                    ASMHelper.replaceSelfForwardingMethod(method, SLOT_MAP_METHOD, containertype);
-                } else if ("isLargeChest".equals(method.name)) {
-                    ASMHelper.replaceSelfForwardingMethod(method, LARGE_CHEST_METHOD, containertype);
-                }
-            }
             cn.accept(cw);
             return cw.toByteArray();
         }
@@ -305,6 +283,7 @@ public class ContainerTransformer implements IClassTransformer {
      * @param info  Information used to alter class
      */
     public static void transformContainer(ClassNode clazz, ContainerInfo info) {
+        clazz.interfaces.add(IINV_TWEAKS_CONTAINER_INTERFACE);
         ASMHelper.generateBooleanMethodConst(clazz, SHOW_BUTTONS_METHOD, info.showButtons);
         ASMHelper.generateBooleanMethodConst(clazz, VALID_INVENTORY_METHOD, info.validInventory);
         ASMHelper.generateBooleanMethodConst(clazz, VALID_CHEST_METHOD, info.validChest);
@@ -372,6 +351,7 @@ public class ContainerTransformer implements IClassTransformer {
      * @param clazz Class to alter
      */
     public static void transformBaseContainer(ClassNode clazz) {
+        clazz.interfaces.add(IINV_TWEAKS_CONTAINER_INTERFACE);
         ASMHelper.generateBooleanMethodConst(clazz, SHOW_BUTTONS_METHOD, false);
         ASMHelper.generateBooleanMethodConst(clazz, VALID_INVENTORY_METHOD, false);
         ASMHelper.generateBooleanMethodConst(clazz, VALID_CHEST_METHOD, false);

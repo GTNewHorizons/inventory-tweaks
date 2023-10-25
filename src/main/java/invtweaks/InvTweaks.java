@@ -36,6 +36,7 @@ import invtweaks.api.IItemTreeItem;
 import invtweaks.api.SortingMethod;
 import invtweaks.api.container.ContainerSection;
 import invtweaks.forge.InvTweaksMod;
+import invtweaks.forge.asm.interfaces.IInvTweaksContainer;
 
 /**
  * Main class for Inventory Tweaks, which maintains various hooks and dispatches the events to the correct handlers.
@@ -198,9 +199,10 @@ public class InvTweaks extends InvTweaksObfuscation {
 
             // Check current GUI
             GuiScreen guiScreen = getCurrentScreen();
-            if (guiScreen == null
-                    || (guiScreen instanceof GuiContainer && (isValidChest(((GuiContainer) guiScreen).inventorySlots)
-                            || isValidInventory(((GuiContainer) guiScreen).inventorySlots)))) {
+            if (guiScreen == null || (guiScreen instanceof GuiContainer
+                    && (((IInvTweaksContainer) ((GuiContainer) guiScreen).inventorySlots).invtweaks$validChest()
+                            || ((IInvTweaksContainer) ((GuiContainer) guiScreen).inventorySlots)
+                                    .invtweaks$validInventory()))) {
                 // Sorting!
                 handleSorting(guiScreen);
             }
@@ -715,7 +717,7 @@ public class InvTweaks extends InvTweaksObfuscation {
                         target = containerMgr.getSlotSection(getSlotNumber(slotAtMousePosition));
                     }
 
-                    if (isValidChest(container)) {
+                    if (((IInvTweaksContainer) container).invtweaks$validChest()) {
 
                         // Check if the middle click target the chest or the inventory
                         // (copied GuiContainer.getSlotAtPosition algorithm)
@@ -736,7 +738,7 @@ public class InvTweaks extends InvTweaksObfuscation {
                                         cfgManager.getConfig(),
                                         ContainerSection.CHEST,
                                         chestAlgorithm,
-                                        getContainerRowSize(guiContainer)).sort();
+                                        ((IInvTweaksContainer) guiContainer.inventorySlots).invtweaks$rowSize()).sort();
                             } catch (Exception e) {
                                 logInGameError("invtweaks.sort.chest.error", e);
                                 e.printStackTrace();
@@ -765,7 +767,7 @@ public class InvTweaks extends InvTweaksObfuscation {
                                         handleSorting(guiScreen);
                                     }
 
-                    } else if (isValidInventory(container)) {
+                    } else if (((IInvTweaksContainer) container).invtweaks$validInventory()) {
                         if (ContainerSection.CRAFTING_IN.equals(target)
                                 || ContainerSection.CRAFTING_IN_PERSISTENT.equals(target)) {
                             // Crafting stacks evening
@@ -800,9 +802,9 @@ public class InvTweaks extends InvTweaksObfuscation {
 
         Container container = guiContainer.inventorySlots;
 
-        boolean isValidChest = isValidChest(container);
+        boolean isValidChest = ((IInvTweaksContainer) container).invtweaks$validChest();
 
-        if (showButtons(container) && !isGuiEnchantmentTable(guiContainer)) {
+        if (((IInvTweaksContainer) container).invtweaks$showButtons() && !isGuiEnchantmentTable(guiContainer)) {
             int w = 10, h = 10;
 
             // Re-layout when NEI changes states.
@@ -861,7 +863,8 @@ public class InvTweaks extends InvTweaksObfuscation {
 
                     int id = InvTweaksConst.JIMEOWAN_ID, x = guiContainer.guiLeft + guiContainer.xSize - 16,
                             y = guiContainer.guiTop + 5;
-                    boolean isChestWayTooBig = isLargeChest(guiContainer.inventorySlots);
+                    boolean isChestWayTooBig = ((IInvTweaksContainer) guiContainer.inventorySlots)
+                            .invtweaks$largeChest();
 
                     // NotEnoughItems compatibility
                     if (isChestWayTooBig && isNEIEnabled) {
@@ -885,7 +888,7 @@ public class InvTweaks extends InvTweaksObfuscation {
                     // Sorting buttons
                     if (!config.getProperty(InvTweaksConfig.PROP_SHOW_CHEST_BUTTONS).equals("false")) {
 
-                        int rowSize = getContainerRowSize(guiContainer);
+                        int rowSize = ((IInvTweaksContainer) guiContainer.inventorySlots).invtweaks$rowSize();
 
                         GuiButton button = new InvTweaksGuiSortingButton(
                                 cfgManager,
@@ -988,7 +991,8 @@ public class InvTweaks extends InvTweaksObfuscation {
     private void handleShortcuts(GuiContainer guiScreen) {
 
         // Check open GUI
-        if (!(isValidChest(guiScreen.inventorySlots) || isValidInventory(guiScreen.inventorySlots))) {
+        if (!(((IInvTweaksContainer) guiScreen.inventorySlots).invtweaks$validChest()
+                || ((IInvTweaksContainer) guiScreen.inventorySlots).invtweaks$validInventory())) {
             return;
         }
 
@@ -1013,10 +1017,6 @@ public class InvTweaks extends InvTweaksObfuscation {
         List<IItemTreeItem> items = cfgManager.getConfig().getTree()
                 .getItems(Item.itemRegistry.getNameForObject(itemStack.getItem()), itemStack.getItemDamage());
         return (items != null && items.size() > 0) ? items.get(0).getOrder() : Integer.MAX_VALUE;
-    }
-
-    private int getContainerRowSize(GuiContainer guiContainer) {
-        return getSpecialChestRowSize(guiContainer.inventorySlots);
     }
 
     private boolean isSortingShortcutDown() {
