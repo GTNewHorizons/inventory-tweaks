@@ -47,12 +47,8 @@ public class ContainerTransformer implements IClassTransformer {
     private static final Map<String, ContainerInfo> standardClasses = new HashMap<>();
     private static final Map<String, ContainerInfo> compatibilityClasses = new HashMap<>();
     private static final Map<String, ContainerInfo> configClasses = new HashMap<>();
-    private static String containerClassName;
 
-    public ContainerTransformer() {}
-
-    // This needs to have access to the FML remapper so it needs to run when we know it's been set up correctly.
-    private void lateInit() {
+    public ContainerTransformer() {
         // TODO: ContainerCreative handling
         // Standard non-chest type
         standardClasses.put(
@@ -117,15 +113,6 @@ public class ContainerTransformer implements IClassTransformer {
 
     @Override
     public byte[] transform(String name, String transformedName, byte[] bytes) {
-
-        if (containerClassName == null) {
-            if (FMLPlugin.isObf()) {
-                containerClassName = FMLDeobfuscatingRemapper.INSTANCE.unmap(CONTAINER_CLASS_INTERNAL);
-            } else {
-                containerClassName = CONTAINER_CLASS_INTERNAL;
-            }
-            lateInit();
-        }
 
         ClassReader cr = new ClassReader(bytes);
         ClassNode cn = new ClassNode(Opcodes.ASM4);
@@ -427,7 +414,7 @@ public class ContainerTransformer implements IClassTransformer {
 
     public static MethodInfo getSlotMapInfo(Type mClass, String name, boolean isStatic) {
         return new MethodInfo(
-                Type.getMethodType(Type.getObjectType("java/util/Map"), Type.getObjectType(containerClassName)),
+                Type.getMethodType(Type.getObjectType("java/util/Map"), Type.getObjectType(CONTAINER_CLASS_INTERNAL)),
                 mClass,
                 name,
                 isStatic);
