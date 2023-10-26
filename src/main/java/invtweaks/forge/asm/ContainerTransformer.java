@@ -43,6 +43,10 @@ public class ContainerTransformer implements IClassTransformer {
     private static final String ANNOTATION_CONTAINER_SECTION_CALLBACK = "Linvtweaks/api/container/ContainerSectionCallback;";
     private static final Logger logger = LogManager.getLogger("ASM InvTweaks");
     private static final Map<String, ContainerInfo> containerToTransform = new HashMap<>();
+    private static final ClassConstantPoolParser classParser = new ClassConstantPoolParser(
+            ANNOTATION_CHEST_CONTAINER,
+            ANNOTATION_INVENTORY_CONTAINER,
+            ANNOTATION_IGNORE_CONTAINER);
 
     public ContainerTransformer() {
         // TODO: ContainerCreative handling
@@ -111,18 +115,18 @@ public class ContainerTransformer implements IClassTransformer {
     public byte[] transform(String name, String transformedName, byte[] basicClass) {
 
         if ("net.minecraft.inventory.Container".equals(transformedName)) {
-            logger.info("Transforming " + transformedName);
+            logger.debug("Transforming " + transformedName);
             return transformContainer(basicClass);
         }
 
         if ("net.minecraft.client.gui.GuiTextField".equals(transformedName)) {
-            logger.info("Transforming " + transformedName);
+            logger.debug("Transforming " + transformedName);
             return transformGuiTextField(basicClass);
         }
 
         // Transform classes with explicitly specified information
         if (containerToTransform.containsKey(transformedName)) {
-            logger.info("Transforming " + transformedName);
+            logger.debug("Transforming " + transformedName);
             ClassReader classReader = new ClassReader(basicClass);
             ClassNode classNode = new ClassNode(Opcodes.ASM5);
             classReader.accept(classNode, 0);
@@ -132,95 +136,99 @@ public class ContainerTransformer implements IClassTransformer {
             return classWriter.toByteArray();
         }
 
-        ClassReader cr = new ClassReader(basicClass);
-        ClassNode cn = new ClassNode(Opcodes.ASM5);
-        ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
+        if (classParser.parse(basicClass)) {
 
-        cr.accept(cn, 0);
+            ClassReader cr = new ClassReader(basicClass);
+            ClassNode cn = new ClassNode(Opcodes.ASM5);
+            ClassWriter cw = new ClassWriter(0);
 
-        if (cn.visibleAnnotations != null) {
-            for (AnnotationNode annotation : cn.visibleAnnotations) {
-                if (annotation != null) {
-                    ContainerInfo apiInfo = null;
+            cr.accept(cn, 0);
 
-                    if (ANNOTATION_CHEST_CONTAINER.equals(annotation.desc)) {
-                        short rowSize = 9;
-                        boolean isLargeChest = false;
-                        boolean showButtons = true;
+            if (cn.visibleAnnotations != null) {
+                for (AnnotationNode annotation : cn.visibleAnnotations) {
+                    if (annotation != null) {
+                        ContainerInfo apiInfo = null;
 
-                        if (annotation.values != null) {
-                            for (int i = 0; i < annotation.values.size(); i += 2) {
-                                String valueName = (String) annotation.values.get(i);
-                                Object value = annotation.values.get(i + 1);
+                        if (ANNOTATION_CHEST_CONTAINER.equals(annotation.desc)) {
+                            short rowSize = 9;
+                            boolean isLargeChest = false;
+                            boolean showButtons = true;
 
-                                if ("rowSize".equals(valueName)) {
-                                    rowSize = (short) ((Integer) value).intValue();
-                                } else if ("isLargeChest".equals(valueName)) {
-                                    isLargeChest = (Boolean) value;
-                                } else if ("showButtons".equals(valueName)) {
-                                    showButtons = (Boolean) value;
+                            if (annotation.values != null) {
+                                for (int i = 0; i < annotation.values.size(); i += 2) {
+                                    String valueName = (String) annotation.values.get(i);
+                                    Object value = annotation.values.get(i + 1);
+
+                                    if ("rowSize".equals(valueName)) {
+                                        rowSize = (short) ((Integer) value).intValue();
+                                    } else if ("isLargeChest".equals(valueName)) {
+                                        isLargeChest = (Boolean) value;
+                                    } else if ("showButtons".equals(valueName)) {
+                                        showButtons = (Boolean) value;
+                                    }
                                 }
                             }
-                        }
 
-                        apiInfo = new ContainerInfo(showButtons, false, true, isLargeChest, rowSize);
+                            apiInfo = new ContainerInfo(showButtons, false, true, isLargeChest, rowSize);
 
-                        MethodNode row_method = findAnnotatedMethod(cn, ANNOTATION_CHEST_CONTAINER_ROW_CALLBACK);
+                            MethodNode row_method = findAnnotatedMethod(cn, ANNOTATION_CHEST_CONTAINER_ROW_CALLBACK);
 
-                        if (row_method != null) {
-                            apiInfo.rowSizeMethod = new MethodInfo(
-                                    Type.getMethodType(row_method.desc),
-                                    Type.getObjectType(cn.name),
-                                    row_method.name);
-                        }
+                            if (row_method != null) {
+                                apiInfo.rowSizeMethod = new MethodInfo(
+                                        Type.getMethodType(row_method.desc),
+                                        Type.getObjectType(cn.name),
+                                        row_method.name);
+                            }
 
-                        MethodNode large_method = findAnnotatedMethod(cn, ANNOTATION_CHEST_CONTAINER_LARGE_CALLBACK);
+                            MethodNode large_method = findAnnotatedMethod(
+                                    cn,
+                                    ANNOTATION_CHEST_CONTAINER_LARGE_CALLBACK);
 
-                        if (large_method != null) {
-                            apiInfo.largeChestMethod = new MethodInfo(
-                                    Type.getMethodType(large_method.desc),
-                                    Type.getObjectType(cn.name),
-                                    large_method.name);
-                        }
-                    } else if (ANNOTATION_INVENTORY_CONTAINER.equals(annotation.desc)) {
-                        boolean showOptions = true;
+                            if (large_method != null) {
+                                apiInfo.largeChestMethod = new MethodInfo(
+                                        Type.getMethodType(large_method.desc),
+                                        Type.getObjectType(cn.name),
+                                        large_method.name);
+                            }
+                        } else if (ANNOTATION_INVENTORY_CONTAINER.equals(annotation.desc)) {
+                            boolean showOptions = true;
 
-                        if (annotation.values != null) {
-                            for (int i = 0; i < annotation.values.size(); i += 2) {
-                                String valueName = (String) annotation.values.get(i);
-                                Object value = annotation.values.get(i + 1);
+                            if (annotation.values != null) {
+                                for (int i = 0; i < annotation.values.size(); i += 2) {
+                                    String valueName = (String) annotation.values.get(i);
+                                    Object value = annotation.values.get(i + 1);
 
-                                if ("showOptions".equals(valueName)) {
-                                    showOptions = (Boolean) value;
+                                    if ("showOptions".equals(valueName)) {
+                                        showOptions = (Boolean) value;
+                                    }
                                 }
                             }
+
+                            apiInfo = new ContainerInfo(showOptions, true, false);
+                        } else if (ANNOTATION_IGNORE_CONTAINER.equals(annotation.desc)) {
+                            // Annotation to restore default properties.
+                            logger.debug("Transforming " + transformedName);
+                            transformBaseContainer(cn);
+                            cn.accept(cw);
+                            return cw.toByteArray();
                         }
 
-                        apiInfo = new ContainerInfo(showOptions, true, false);
-                    } else if (ANNOTATION_IGNORE_CONTAINER.equals(annotation.desc)) {
-                        // Annotation to restore default properties.
+                        if (apiInfo != null) {
+                            // Search methods to see if any have the ContainerSectionCallback attribute.
+                            MethodNode method = findAnnotatedMethod(cn, ANNOTATION_CONTAINER_SECTION_CALLBACK);
 
-                        transformBaseContainer(cn);
+                            if (method != null) {
+                                apiInfo.slotMapMethod = new MethodInfo(
+                                        Type.getMethodType(method.desc),
+                                        Type.getObjectType(cn.name),
+                                        method.name);
+                            }
 
-                        cn.accept(cw);
-                        return cw.toByteArray();
-                    }
-
-                    if (apiInfo != null) {
-                        // Search methods to see if any have the ContainerSectionCallback attribute.
-                        MethodNode method = findAnnotatedMethod(cn, ANNOTATION_CONTAINER_SECTION_CALLBACK);
-
-                        if (method != null) {
-                            apiInfo.slotMapMethod = new MethodInfo(
-                                    Type.getMethodType(method.desc),
-                                    Type.getObjectType(cn.name),
-                                    method.name);
+                            logger.debug("Transforming " + transformedName);
+                            transformContainer(cn, apiInfo);
+                            cn.accept(cw);
+                            return cw.toByteArray();
                         }
-
-                        transformContainer(cn, apiInfo);
-
-                        cn.accept(cw);
-                        return cw.toByteArray();
                     }
                 }
             }
