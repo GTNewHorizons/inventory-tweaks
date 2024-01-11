@@ -1,13 +1,16 @@
 package invtweaks;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 import java.util.Vector;
+import java.util.stream.Collectors;
 
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -184,44 +187,13 @@ public class InvTweaksItemTree implements IItemTree {
             return new ArrayList<IItemTreeItem>();
         }
 
-        List<IItemTreeItem> items = itemsById.get(id);
-        List<IItemTreeItem> filteredItems = new ArrayList<IItemTreeItem>();
-        if (items != null) {
-            filteredItems.addAll(items);
-        }
-
-        // Filter items of same ID, but different damage value
-        if (items != null && !items.isEmpty()) {
-            for (IItemTreeItem item : items) {
-                if (item.getDamage() != InvTweaksConst.DAMAGE_WILDCARD && item.getDamage() != damage) {
-                    filteredItems.remove(item);
-                }
-            }
-        }
+        List<IItemTreeItem> filteredItems = Optional.ofNullable((List<IItemTreeItem>) itemsById.get(id))
+                .orElseGet(Collections::emptyList).stream().filter(item -> item.matchesDamage(damage))
+                .collect(Collectors.toList());
 
         // If there's no matching item, create new ones
         if (filteredItems.isEmpty()) {
-            IItemTreeItem newItemId = new InvTweaksItemTreeItem(
-                    String.format("%s-%d", id, damage),
-                    id,
-                    damage,
-                    5000/* TODO: What to do here with non-int IDs + id * 16 */ + damage);
-            IItemTreeItem newItemDamage = new InvTweaksItemTreeItem(
-                    id,
-                    id,
-                    InvTweaksConst.DAMAGE_WILDCARD,
-                    5000/* TODO: What to do here with non-int IDs + id * 16 */);
-            addItem(getRootCategory().getName(), newItemId);
-            addItem(getRootCategory().getName(), newItemDamage);
-            filteredItems.add(newItemId);
-            filteredItems.add(newItemDamage);
-        }
-
-        Iterator<IItemTreeItem> it = filteredItems.iterator();
-        while (it.hasNext()) {
-            if (it.next() == null) {
-                it.remove();
-            }
+            filteredItems.addAll(addUnrecognizedItem(id, damage));
         }
 
         return filteredItems;
@@ -230,6 +202,34 @@ public class InvTweaksItemTree implements IItemTree {
     @Override
     public List<IItemTreeItem> getItems(String name) {
         return itemsByName.get(name);
+    }
+
+    /**
+     * @param id     Item ID
+     * @param damage Item damage value
+     * @return Order index
+     */
+    @Override
+    public int getItemOrder(String id, int damage) {
+        if (id == null) {
+            return 0;
+        }
+
+        List<IItemTreeItem> items = itemsById.get(id);
+        if (items != null) {
+            for (IItemTreeItem item : items) {
+                if (item.matchesDamage(damage)) {
+                    return item.getOrder();
+                }
+            }
+        }
+
+        List<IItemTreeItem> addedItems = addUnrecognizedItem(id, damage);
+
+        if (!addedItems.isEmpty()) {
+            return addedItems.get(0).getOrder();
+        }
+        return 0;
     }
 
     @Override
@@ -297,6 +297,24 @@ public class InvTweaksItemTree implements IItemTree {
             list.add(newItem);
             itemsById.put(newItem.getId(), list);
         }
+    }
+
+    @javax.annotation.Nonnull
+    private List<IItemTreeItem> addUnrecognizedItem(String id, int damage) {
+        IItemTreeItem newItemId = new InvTweaksItemTreeItem(
+                String.format("%s-%d", id, damage),
+                id,
+                damage,
+                5000/* TODO: What to do here with non-int IDs + id * 16 */ + damage);
+        IItemTreeItem newItemDamage = new InvTweaksItemTreeItem(
+                id,
+                id,
+                InvTweaksConst.DAMAGE_WILDCARD,
+                /* TODO: What to do here with non-int IDs + id * 16 */5000);
+        addItem(getRootCategory().getName(), newItemId);
+        addItem(getRootCategory().getName(), newItemDamage);
+
+        return Arrays.asList(newItemId, newItemDamage);
     }
 
     /**

@@ -121,15 +121,14 @@ public class InvTweaksItemTreeLoader extends DefaultHandler {
                 String id = attributes.getValue(ATTR_ID);
                 int rangeDMin = Integer.parseInt(rangeDMinAttr);
                 int rangeDMax = Integer.parseInt(attributes.getValue(ATTR_RANGE_DMAX));
-                for (int damage = rangeDMin; damage <= rangeDMax; damage++) {
-                    tree.addItem(
-                            name,
-                            new InvTweaksItemTreeItem(
-                                    (name + id + "-" + damage).toLowerCase(),
-                                    id,
-                                    damage,
-                                    itemOrder++));
-                }
+                tree.addItem(
+                        name,
+                        new InvTweaksItemTreeItem(
+                                (name + id + "-" + rangeDMin + "-" + rangeDMax).toLowerCase(),
+                                id,
+                                rangeDMin,
+                                rangeDMax,
+                                itemOrder++));
             }
 
             categoryStack.add(name);

@@ -37,6 +37,8 @@ public interface IItemTree {
 
     List<IItemTreeItem> getItems(String name);
 
+    int getItemOrder(String id, int damage);
+
     IItemTreeItem getRandomItem(Random r);
 
     boolean containsItem(String name);

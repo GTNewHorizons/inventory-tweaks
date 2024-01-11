@@ -1014,9 +1014,12 @@ public class InvTweaks extends InvTweaksObfuscation {
     }
 
     private int getItemOrder(ItemStack itemStack) {
-        List<IItemTreeItem> items = cfgManager.getConfig().getTree()
-                .getItems(Item.itemRegistry.getNameForObject(itemStack.getItem()), itemStack.getItemDamage());
-        return (items != null && items.size() > 0) ? items.get(0).getOrder() : Integer.MAX_VALUE;
+        if (itemStack == null) {
+            return Integer.MAX_VALUE;
+        }
+
+        return cfgManager.getConfig().getTree()
+                .getItemOrder(Item.itemRegistry.getNameForObject(itemStack.getItem()), itemStack.getItemDamage());
     }
 
     private boolean isSortingShortcutDown() {

@@ -21,5 +21,7 @@ public interface IItemTreeItem extends Comparable<IItemTreeItem> {
 
     int getDamage();
 
+    boolean matchesDamage(int damage);
+
     int getOrder();
 }
