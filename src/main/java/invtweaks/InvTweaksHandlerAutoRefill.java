@@ -149,7 +149,7 @@ public class InvTweaksHandlerAutoRefill extends InvTweaksObfuscation {
 
         if (replacementStack != null || (refillBeforeBreak && container.getSlot(slot).getStack() != null)) {
 
-            log.info("Automatic stack replacement.");
+            log.debug("Automatic stack replacement.");
 
             /*
              * This allows to have a short feedback that the stack/tool is empty/broken.
